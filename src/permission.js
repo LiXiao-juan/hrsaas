@@ -6,8 +6,13 @@ const whiteList = ['/login', '/404']
 // 全局路由守卫
 router.beforeEach((to, from, next) => {
   const token = store.state.user.token
-//   判断是否登录
+  //   判断是否登录
   if (token) {
+    // 再判断是否请求过---若第一次进入才发送请求
+    if (!store.state.user.userInfo.userId) {
+      // 每次跳转发送获取用户信息的请求
+      store.dispatch('user/getUserInfo')
+    }
     // 登录了若想去登录页面---强制去首页
     if (to.path === '/login') return next('/')
     // 不去登录页---放行
