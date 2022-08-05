@@ -6,9 +6,9 @@
         <Tree :treeNode="company" :isRoot="true"></Tree>
         <!-- 树形 -->
         <el-tree :data="departs" :props="defaultProps" default-expand-all>
-            <template v-slot="{ data }">
-              <Tree :treeNode="data" />
-            </template>
+          <template v-slot="{ data }">
+            <Tree :treeNode="data" />
+          </template>
         </el-tree>
       </el-card>
     </div>
@@ -16,15 +16,13 @@
 </template>
 
 <script>
+import { transListToTree } from '@/utils'
 import Tree from '@/views/departments/components/tree-tools.vue'
+import { getDeptsApi } from '@/api/departments'
 export default {
   data() {
     return {
-      departs: [
-        { name: '总裁办', children: [{ name: '董事会' }] },
-        { name: '行政部' },
-        { name: '人事部' }
-      ],
+      departs: [],
       defaultProps: {
         label: 'name' // 展示到树状的数据
       },
@@ -34,9 +32,18 @@ export default {
   components: {
     Tree
   },
-  created() {},
+  created() {
+    this.loadDepts()
+  },
 
-  methods: {}
+  methods: {
+    // 获取树状信息
+    async loadDepts() {
+      const res = await getDeptsApi()
+      this.departs = transListToTree(res.depts, '')
+      console.log(res.depts)
+    }
+  }
 }
 </script>
 
