@@ -1,6 +1,6 @@
 <template>
   <!-- 新增部门 -->
-  <el-dialog title="新增部门" :visible="visible" width="50%" @close="onClose">
+  <el-dialog :title="title" :visible="visible" width="50%" @close="onClose">
     <el-form
       ref="form"
       label-width="100px"
@@ -44,24 +44,51 @@
 
 <script>
 import { getEmployeesListApi } from '@/api/employees'
-import { getDeptsApi, addDept } from '@/api/departments'
+import {
+  getDeptsApi,
+  addDept,
+  getDeptByIdApi,
+  editDeptByIdApi
+} from '@/api/departments'
 export default {
   components: {},
   data() {
-    const checkDeptName = (rule, value, callback) => {
+    const checkDeptName = async (rule, value, callback) => {
       // 判断该部门是否有子部门  若没有则直接return
       if (!this.currentDept.children) return callback()
-      // 判断同级是否有重复
-      const isRepeat = this.currentDept.children.some(
-        (item) => item.name === value
-      )
-      // 重复则提示错误
-      isRepeat ? callback(new Error('部门重复')) : callback()
+      // 若有id则是编辑
+      if (this.formData.id) {
+        // 发起获取部门数据
+        const { depts } = await getDeptsApi()
+        // 筛选除了自己以外的同级部门
+        const isRepeat = depts
+          .filter(
+            (item) =>
+              item.pid === this.formData.pid && item.id !== this.formData.pid
+          )
+          .some((item) => item.name !== value) //不能和同级其他部门重名
+        // 重复则提示错误
+        isRepeat ? callback(new Error('部门重复')) : callback()
+      } else {
+        // 判断同级是否有重复
+        let isRepeat = this.currentDept.children.some(
+          (item) => item.name === value
+        )
+        // 重复则提示错误
+        isRepeat ? callback(new Error('部门重复')) : callback()
+      }
     }
     const checkDeptCode = async (rule, value, callback) => {
       const { depts } = await getDeptsApi()
-      // 判断是否编码有重复
-      const isRepeat = depts.some((item) => item.code === value)
+      let isRepeat
+      if (this.formData.id) {
+        isRepeat = depts
+          .filter((item) => item.id !== this.formData.id)
+          .some((item) => item.code === value)
+      } else {
+        // 判断是否编码有重复
+        const isRepeat = depts.some((item) => item.code === value)
+      }
       // 重复则提示错误
       isRepeat ? callback(new Error('部门编码重复')) : callback()
     }
@@ -117,21 +144,48 @@ export default {
     // 关闭事件
     onClose() {
       this.$emit('update:visible', false)
+      // 重置校验规则
+      this.$refs.form.resetFields()
+      // 重置表单数据--清除id---区分添加以及编辑
+      this.formData = {
+        name: '', // 部门名称
+        code: '', // 部门编码
+        manager: '', // 部门管理者
+        introduce: '' // 部门介绍
+      }
     },
     // 添加部门
     async onSave() {
-      await this.$refs.form.validate()
-      this.formData.pid = this.currentDept.id
-      try {
+      // 编辑
+      if (this.formData.id) {
+        await editDeptByIdApi(this.formData)
+        // 关闭弹框
+        this.onClose()
+        // 调用父组件的方法
+        this.$parent.loadDepts()
+        this.$message.success('编辑成功')
+
+        // 添加
+      } else {
+        await this.$refs.form.validate()
+        this.formData.pid = this.currentDept.id
         await addDept(this.formData)
         this.$message.success('添加部门成功')
         // 关闭弹框   checkDeptCode for the
         this.onClose()
         // 调用父组件的方法
         this.$parent.loadDepts()
-      } catch (error) {
-        this.$message.error('添加部门失败')
       }
+      // this.$message.error('操作部门失败')
+    },
+    async getDeptsById(id) {
+      const res = await getDeptByIdApi(id)
+      this.formData = res
+    }
+  },
+  computed: {
+    title() {
+      return this.formData.id ? '编辑部门' : '添加部门'
     }
   }
 }

@@ -11,10 +11,14 @@
             </span>
             <el-dropdown-menu slot="dropdown">
               <!-- 将数据传到父组件 -->
-              <el-dropdown-item @click.native="$emit('add',treeNode)">添加部门</el-dropdown-item>
+              <el-dropdown-item @click.native="$emit('add', treeNode)"
+                >添加部门</el-dropdown-item
+              >
               <!-- 头部公司不用 -->
               <template v-if="!isRoot">
-                <el-dropdown-item>编辑部门</el-dropdown-item>
+                <el-dropdown-item @click.native="$emit('edit',treeNode)"
+                  >编辑部门</el-dropdown-item
+                >
                 <el-dropdown-item @click.native="removeBtn"
                   >删除部门</el-dropdown-item
                 >
@@ -63,7 +67,8 @@ export default {
         // this.$parent.loadDepts()
         this.$emit('delDepts')
       } catch (error) {}
-    }
+    },
+
   }
 }
 </script>
