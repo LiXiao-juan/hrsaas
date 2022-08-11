@@ -31,24 +31,49 @@
               </template>
             </el-table-column>
           </el-table>
+          <!-- 分页区 -->
+          <div>
+            <el-pagination
+              @current-change="changePage"
+              @size-change="handleSizeChange"
+              :total="tableData.total"
+              :page-sizes="[3, 5, 7, 10]"
+              :page-size="params.pagesize"
+              layout="sizes,prev, pager, next"
+            >
+            </el-pagination>
+          </div>
 
           <!-- 配置管理 -->
         </el-tab-pane>
-        <el-tab-pane label="公司信息" name="second">配置管理</el-tab-pane>
+        <!-- 公司管理 -->
+        <el-tab-pane label="公司信息" name="second">
+          <el-alert
+            title="对公司名称、公司地址、营业执照、公司地区的更新，将使得公司资料被重新审核，请谨慎修改"
+            type="info"
+            show-icon
+            :closable="false"
+          >
+          </el-alert>
+          <el-form ref="form" label-width="80px">
+            <el-form-item label="公司名称">
+              <el-input disabled v-model="companyInfo.name"></el-input>
+            </el-form-item>
+            <el-form-item label="公司地址">
+              <el-input
+                disabled
+                v-model="companyInfo.companyAddress"
+              ></el-input>
+            </el-form-item>
+            <el-form-item label="公司邮箱">
+              <el-input disabled v-model="companyInfo.mailbox"></el-input>
+            </el-form-item>
+            <el-form-item label="备注">
+              <el-input disabled v-model="companyInfo.remarks"></el-input>
+            </el-form-item>
+          </el-form>
+        </el-tab-pane>
       </el-tabs>
-
-      <!-- 分页区 -->
-      <div>
-        <el-pagination
-          @current-change="changePage"
-          @size-change="handleSizeChange"
-          :total="tableData.total"
-          :page-sizes="[3, 5, 7, 10]"
-          :page-size="params.pagesize"
-          layout="sizes,prev, pager, next"
-        >
-        </el-pagination>
-      </div>
 
       <!-- 对话框 -->
       <el-dialog
@@ -80,11 +105,16 @@
 </template>
 
 <script>
-import { getEmployeeApi, addEmployeeApi, delEmployeeApi } from '@/api/setting'
+import {
+  getEmployeeApi,
+  addEmployeeApi,
+  delEmployeeApi,
+  getCompanyInfo
+} from '@/api/setting'
 export default {
   data() {
     return {
-      activeName: 'first',
+      activeName: 'second',
       //添加的表单对象
       addRoleForm: {
         name: '',
@@ -101,6 +131,7 @@ export default {
       },
       tableArr: [], // 表格数据数组
       tableData: {},
+      companyInfo: {},
       addDialogVisible: false
     }
   },
@@ -109,6 +140,7 @@ export default {
   created() {
     // 初始化调用人员列表
     this.getEmployeeList()
+    this.getCompanyInfo()
   },
 
   methods: {
@@ -161,6 +193,13 @@ export default {
     closeDialog() {
       this.$refs.form.resetFields()
       this.addRoleForm.region = ''
+    },
+    // 获取公司信息
+    async getCompanyInfo() {
+      const res = await getCompanyInfo(
+        this.$store.state.user.userInfo.companyId
+      )
+      this.companyInfo = res
     }
   }
 }
@@ -169,5 +208,8 @@ export default {
 <style scoped lang="scss">
 .el-pagination {
   text-align: right;
+}
+.el-form {
+  margin-top: 20px;
 }
 </style>

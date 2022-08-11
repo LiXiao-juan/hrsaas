@@ -25,14 +25,23 @@ export function delEmployeeApi(id) {
 }
 
 /**
- * 
- * @param {*} data name:角色名称   region:角色描述	
- * @returns 
+ *
+ * @param {*} data name:角色名称   region:角色描述
+ * @returns
  */
 export function addEmployeeApi(data) {
   return request({
     url: '/sys/role',
     method: 'POST',
     data
+  })
+}
+
+/**
+ * 获取公司信息
+ * **/
+export function getCompanyInfo(companyId) {
+  return request({
+    url: `/company/${companyId}`
   })
 }
