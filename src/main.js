@@ -16,7 +16,7 @@ import '@/icons' // icon
 import '@/permission' // permission control
 import * as directives from '@/directives'
 // set ElementUI lang to EN
-Vue.use(ElementUI, { locale })
+Vue.use(ElementUI)
 for (let k in directives) {
   Vue.directive(k, directives[k])
 }
