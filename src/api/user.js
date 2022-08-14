@@ -25,6 +25,11 @@ export function getUserInfo() {
   })
 }
 
+/**
+ *  用户详细信息
+ * @param {*} id 
+ * @returns 
+ */
 export function getUserDetail(id) {
   return request({
     url: '/sys/user/' + id,
