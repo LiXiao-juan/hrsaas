@@ -18,6 +18,8 @@ import * as directives from '@/directives'
 import component from './components'
 // 过滤器
 import * as filters from '@/filters'
+import Print from 'vue-print-nb'
+Vue.use(Print)
 Vue.use(ElementUI)
 // 统一注册自定义指令
 for (let k in directives) {
