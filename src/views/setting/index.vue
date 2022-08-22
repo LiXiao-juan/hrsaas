@@ -8,6 +8,7 @@
             type="primary"
             size="small"
             @click="addDialogVisible = true"
+            v-isHas="points.roles.add"
             >新增角色</el-button
           >
 
@@ -23,10 +24,15 @@
                 <el-button
                   type="success"
                   size="small"
-                  @click="showRightsDialog(row)"
+                  @click="showRightsDialog(row.id)"
                   >分配权限</el-button
                 >
-                <el-button type="primary" size="small">编辑</el-button>
+                <el-button
+                  type="primary"
+                  size="small"
+                  v-isHas="points.roles.edit"
+                  >编辑</el-button
+                >
                 <el-button type="danger" size="small" @click="delRole(row)"
                   >删除</el-button
                 >
@@ -38,8 +44,12 @@
             title="分配权限"
             :visible.sync="setDialogVisible"
             width="50%"
+            :destroy-on-close="true"
+            @close="setRightsClose"
           >
             <el-tree
+              ref="perRights"
+              v-loading="loading"
               node-key="id"
               show-checkbox
               :data="treeList"
@@ -49,7 +59,7 @@
             ></el-tree>
             <span slot="footer" class="dialog-footer">
               <el-button @click="setDialogVisible = false">取 消</el-button>
-              <el-button type="primary">确 定</el-button>
+              <el-button type="primary" @click="setRights">确 定</el-button>
             </span>
           </el-dialog>
           <!-- 分页区 -->
@@ -130,11 +140,15 @@ import {
   getEmployeeApi,
   addEmployeeApi,
   delEmployeeApi,
-  getCompanyInfo
+  getCompanyInfo,
+  getRolesInfo,
+  assignPerm
 } from '@/api/setting'
 import { getPermissionList } from '@/api/permisson'
 import { transListToTree } from '@/utils/index'
+import MixinPermissions from '@/mixins/permission'
 export default {
+  mixins: [MixinPermissions],
   data() {
     return {
       activeName: 'first',
@@ -158,7 +172,9 @@ export default {
       addDialogVisible: false,
       setDialogVisible: false,
       treeList: [],
-      checkedKeys: ['1', '1063315016368918528']
+      checkedKeys: [],
+      loading: false,
+      roleId: ''
     }
   },
   methods: {},
@@ -229,14 +245,38 @@ export default {
       this.companyInfo = res
     },
     // 分配权限
-    showRightsDialog() {
+    async showRightsDialog(id) {
+      this.loading = true
       this.setDialogVisible = true
+      // 获取角色权限
+      const res = await getRolesInfo(id)
+      this.roleId = id
+      this.loading = false
+      this.checkedKeys = res.permIds
     },
     // 获取权限
     async getPermissions() {
       const res = await getPermissionList()
       this.treeList = transListToTree(res, '0')
-      console.log(this.treeList)
+    },
+    // 监听分配权限对话框关闭清空 数组
+    setRightsClose() {
+      this.checkedKeys = []
+    },
+    // 确认分配权限
+    async setRights() {
+      const rightsArr = this.$refs.perRights.getCheckedKeys()
+      if (!rightsArr.length) return this.$message.error('至少选择一个权限')
+      // 发起更新权限的请求
+      await assignPerm({
+        id: this.roleId,
+        permIds: rightsArr
+      })
+      this.$message.success('分配权限成功')
+      this.setDialogVisible = false
+    },
+    isHas(val) {
+      return this.$store.state.permisson.points.includes(val)
     }
   }
 }

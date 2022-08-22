@@ -21,9 +21,7 @@ export default {
   name: 'PageTools',
   components: {},
   data() {
-    return {
-      
-    }
+    return {}
   },
   props: {
     icon: {
@@ -35,11 +33,13 @@ export default {
       default: true
     }
   },
-  created() {
-    
-  },
+  created() {},
   methods: {}
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.box-card {
+  margin: 20px 0;
+}
+</style>

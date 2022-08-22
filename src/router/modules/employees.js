@@ -2,6 +2,9 @@ import Layout from '@/layout'
 export default {
   path: '/employees',
   component: Layout,
+  meta: {
+    id: 'employees'
+  },
   children: [
     {
       path: '',
@@ -11,12 +14,12 @@ export default {
     {
       path: 'detail/:id',
       component: () => import('@/views/employees/detail'),
-      hidden:true,
+      hidden: true
     },
     {
       path: 'print/:id',
       component: () => import('@/views/employees/print'),
-      hidden:true,
+      hidden: true
     }
   ]
 }

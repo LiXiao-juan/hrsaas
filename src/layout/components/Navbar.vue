@@ -41,10 +41,11 @@ import { mapGetters, mapState } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
 import defaultImg from '@/assets/common/head.jpg'
+
 export default {
   data() {
     return {
-      defaultImg,
+      defaultImg
     }
   },
   components: {
@@ -62,6 +63,7 @@ export default {
     async logout() {
       await this.$store.dispatch('user/logout')
       this.$router.push('/login')
+     
     }
   }
 }

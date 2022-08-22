@@ -1,4 +1,4 @@
-import router from './router'
+import router, { asyncRoutes } from './router'
 import store from './store'
 
 // 白名单----用户未登录也可以访问
@@ -11,7 +11,10 @@ router.beforeEach(async (to, from, next) => {
     // 再判断是否请求过---若第一次进入才发送请求
     if (!store.state.user.userInfo.userId) {
       // 每次跳转发送获取用户信息的请求
-      await store.dispatch('user/getUserInfo')
+      const { roles } = await store.dispatch('user/getUserInfo')
+      await store.dispatch('permisson/filterRouters', roles)
+      await store.commit('permisson/setPoints', roles.points)
+      next(to.path)
     }
     // 登录了若想去登录页面---强制去首页
     if (to.path === '/login') return next('/')
