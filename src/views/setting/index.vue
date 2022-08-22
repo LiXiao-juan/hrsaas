@@ -19,18 +19,39 @@
             <el-table-column prop="description" label="描述"> </el-table-column>
             <el-table-column prop="address" label="操作">
               <!-- 作用域插槽 -->
-              <template slot-scope="scope">
-                <el-button type="success" size="small">分配权限</el-button>
-                <el-button type="primary" size="small">编辑</el-button>
+              <template slot-scope="{ row }">
                 <el-button
-                  type="danger"
+                  type="success"
                   size="small"
-                  @click="delRole(scope.row)"
+                  @click="showRightsDialog(row)"
+                  >分配权限</el-button
+                >
+                <el-button type="primary" size="small">编辑</el-button>
+                <el-button type="danger" size="small" @click="delRole(row)"
                   >删除</el-button
                 >
               </template>
             </el-table-column>
           </el-table>
+          <!-- 分配权限对话框 -->
+          <el-dialog
+            title="分配权限"
+            :visible.sync="setDialogVisible"
+            width="50%"
+          >
+            <el-tree
+              node-key="id"
+              show-checkbox
+              :data="treeList"
+              :props="{ label: 'name' }"
+              default-expand-all
+              :default-checked-keys="checkedKeys"
+            ></el-tree>
+            <span slot="footer" class="dialog-footer">
+              <el-button @click="setDialogVisible = false">取 消</el-button>
+              <el-button type="primary">确 定</el-button>
+            </span>
+          </el-dialog>
           <!-- 分页区 -->
           <div>
             <el-pagination
@@ -111,10 +132,12 @@ import {
   delEmployeeApi,
   getCompanyInfo
 } from '@/api/setting'
+import { getPermissionList } from '@/api/permisson'
+import { transListToTree } from '@/utils/index'
 export default {
   data() {
     return {
-      activeName: 'second',
+      activeName: 'first',
       //添加的表单对象
       addRoleForm: {
         name: '',
@@ -132,7 +155,10 @@ export default {
       tableArr: [], // 表格数据数组
       tableData: {},
       companyInfo: {},
-      addDialogVisible: false
+      addDialogVisible: false,
+      setDialogVisible: false,
+      treeList: [],
+      checkedKeys: ['1', '1063315016368918528']
     }
   },
   methods: {},
@@ -141,6 +167,7 @@ export default {
     // 初始化调用人员列表
     this.getEmployeeList()
     this.getCompanyInfo()
+    this.getPermissions()
   },
 
   methods: {
@@ -200,6 +227,16 @@ export default {
         this.$store.state.user.userInfo.companyId
       )
       this.companyInfo = res
+    },
+    // 分配权限
+    showRightsDialog() {
+      this.setDialogVisible = true
+    },
+    // 获取权限
+    async getPermissions() {
+      const res = await getPermissionList()
+      this.treeList = transListToTree(res, '0')
+      console.log(this.treeList)
     }
   }
 }
