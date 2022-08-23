@@ -4,8 +4,8 @@ export default {
     import: 'employees-import',
     del: 'employees-del',
   },
-  roles:{
+  roles: {
     add: 'roles-add',
     edit: 'roles-edit',
-  }
+  },
 }
